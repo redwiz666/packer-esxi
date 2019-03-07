@@ -4,7 +4,26 @@
   },
   "builders": [
     {
-      "type": "virtualbox-iso",
+      "name": "debian-8-base",
+      "type": "vmware-iso",
+      "guest_os_type": "debian8-64",
+      "vm_name": "debian-9-base",
+      "output_directory": "debian-8-base",
+      "tools_upload_flavor": "linux",
+      "headless": true,
+      
+      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
+      "iso_checksum_type": "sha512",
+      "iso_checksum_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/SHA512SUMS",
+      
+      
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_timeout": "15m",
+      
+      "disk_type_id": "thin",
+      
       "boot_command": [
         "<esc><wait>",
         "install <wait>",
@@ -22,41 +41,28 @@
         "console-keymaps-at/keymap=us <wait>",
         "<enter><wait>"
       ],
-      "boot_wait": "10s",
-      "disk_size": 32768,
-      "guest_os_type": "Debian_64",
-      "headless": true,
-      "http_directory": "http",
-      "iso_checksum_type": "sha512",
-      "iso_checksum_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/SHA512SUMS",
-      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
-      "ssh_username": "vagrant",
-      "ssh_password": "vagrant",
-      "ssh_port": 22,
-      "ssh_wait_timeout": "10000s",
+     
       "shutdown_command": "echo 'vagrant'|sudo -S /sbin/shutdown -hP now",
-      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
-      "virtualbox_version_file": ".vbox_version",
-      "vm_name": "debian-{{user `debian_version`}}-amd64",
-      "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "512" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
-      ]
-    }
-  ],
-  "post-processors": [
-    {
-      "type": "vagrant",
-      "compression_level": "9",
-      "output": "debian-{{user `debian_version`}}-amd64_{{.Provider}}.box",
-      "only": ["virtualbox-iso"]
-    }
-  ],
+      
+      "remote_type": "esx5",
+      "remote_host": "{{user `esxi_host`}}",
+      "remote_datastore": "{{user `esxi_datastore`}}",
+      "remote_username": "{{user `esxi_username`}}",
+      "remote_password": "{{user `esxi_password`}}",
+      "keep_registered": true,
+      
+       "vmx_data": {
+          "ethernet0.networkName": "VM Network"
+       }
+      }],
+      
+      
   "provisioners": [
     {
       "type": "shell",
       "execute_command": "echo 'vagrant' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
       "scripts": [
+        "scripts/open-vm-tools.sh",
         "scripts/update.sh",
         "scripts/sshd.sh",
         "scripts/networking.sh",
@@ -65,7 +71,8 @@
         "scripts/vbaddguest.sh",
         "scripts/cleanup.sh"
       ],
-      "only": ["virtualbox-iso"]
+      
+      "execute_command": "echo 'nullgrid' | {{ .Vars }} sudo -E -S bash '{{ .Path }}'"
     }
   ]
 }
