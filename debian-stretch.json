@@ -65,14 +65,11 @@
         "scripts/open-vm-tools.sh",
         "scripts/update.sh",
         "scripts/sshd.sh",
-        "scripts/networking.sh",
         "scripts/sudoers.sh",
         "scripts/vagrant.sh",
-        "scripts/vbaddguest.sh",
         "scripts/cleanup.sh"
       ],
-      
-      "execute_command": "echo 'nullgrid' | {{ .Vars }} sudo -E -S bash '{{ .Path }}'"
+     
     }
   ]
 }
